@@ -28,8 +28,4 @@ This is a simple calculator built using HTML, CSS, and JavaScript. The calculato
 - **Modulo**: `10 % 3 = 1`
 - **Complex Expressions**: `(5 + 3) × 2 = 16`
 
-## Installation
-To run this project locally:
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/calculator.git
+
