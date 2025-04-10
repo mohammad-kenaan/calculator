@@ -10,7 +10,7 @@ history.appendChild(parentDiv);
 let userInput;
 let result;
 let clearOperator = [`C`, `⌫`];
-const operations = [`+`, `-`, `×`, `÷`, `%`, `X²`, `(`, `)`, `mod`, 'n', `√`, '.'];
+const operations = [`+`, `-`, `×`, `÷`, `%`, `^`, `(`, `)`, `mod`, 'n', `√`, '.'];
 // 3×2+5-4÷3+2+1×2-3
 const precedence = {
   "-": 1,
@@ -21,8 +21,7 @@ const precedence = {
 }
 
 // to separate each number alone and then we will put it in array of index
-const regExp = /(\d+(\.\d+)?|\+|\-|\×|\÷|\(|\)|(mod)|(log)|(X²))/g;
-
+const regExp = /(\d+(\.\d+)?|\+|\-|\×|\÷|\(|\)|(mod)|(log)|(\^))/g;
 let arithmeticOperation = [];
 
 let stack = [];
@@ -42,6 +41,11 @@ calcBody.addEventListener("click", (e) => {
 
     else if (userInput === `=`) {
       arithmeticOperation = displayInput.value.match(regExp);
+      for(let i = 0; i < arithmeticOperation.length; i++) {
+        if(arithmeticOperation[i].includes(operations)){
+          
+        }
+      }
       let infixArr = infix(arithmeticOperation);
       result = postfix(infixArr);
       addEleToHistory(displayInput.value, result);
@@ -56,6 +60,134 @@ calcBody.addEventListener("click", (e) => {
 
   }
 })
+
+
+// -------------- stackCheck -------------------
+function stackCheck(stack, queue, ele) {
+  if (stack.length === 0) stack.push(ele);
+  else {
+    if (precedence[ele] > precedence[stack[stack.length - 1]]) {
+      stack.push(ele);
+    } else if (precedence[ele] == precedence[stack[stack.length - 1]]) {
+      if (isNotParenthesis(stack)) {
+        queue.push(stack[stack.length - 1]);
+      }
+      stack.pop();
+      stack.push(ele);
+    } else if (precedence[ele] < precedence[stack[stack.length - 1]]) {
+
+      if (isNotParenthesis(stack)) {
+        queue.push(stack[stack.length - 1]);
+      }
+      stack.pop();
+      stack.push(ele);
+    }
+  }
+  if (stack.length == 2 &&
+    precedence[ele] == precedence[stack[0]]) {
+    if (isNotParenthesis(stack)) {
+      queue.push(stack[0]);
+    }
+    stack.shift();
+  }
+}
+
+
+// -------------- infix -------------------
+function infix(arithmeticOperation) {
+  console.log("arith is: " + arithmeticOperation); 
+
+  for(let ele = 0; ele < arithmeticOperation.length; ele++) {
+  
+     if (arithmeticOperation[ele] == `)`) {
+      for (let i = stack.length - 1; i >= 0; i--) {
+        if (stack[i] == `(`) {
+          stack.pop();
+          break;
+        } else queue.push(stack.pop());
+      }
+    } 
+        
+    else if (isOperator(arithmeticOperation[ele])) {
+      if(ele === 0 || isPreviousEleOperator(arithmeticOperation, ele)) {
+        arithmeticOperation[ele + 1] = Number(arithmeticOperation[ele] +arithmeticOperation[ele+1]);
+        continue;
+      } else if(areInvalidInputs(arithmeticOperation , ele) ){
+          displayInput.value += `\t Malformed expression!`;
+      }
+
+
+      else {
+      stackCheck(stack, queue, arithmeticOperation[ele]);
+      }
+    } 
+    
+    
+    else if (isNumericInput(arithmeticOperation[ele])) {
+      queue.push(arithmeticOperation[ele]);
+    }
+  }
+
+  if (stack.length !== 0) {
+    for (let i = 0; stack.length > 0; i++) queue.push(stack.pop());
+  }
+  return queue;
+}
+
+// -------------- postfix -------------------
+function postfix(infixArr) {
+  const stack = [];
+  infixArr.forEach(ele => {
+    if (!isNaN(ele)) stack.push(Number(ele));
+    else {    
+      let secondOperand = stack.pop();
+      let firstOperand = stack.pop();
+      let operation = ele;
+      let result;
+
+      if(!isNaN(secondOperand) && !isNaN(firstOperand)) {
+        switch (operation) {
+          case `+`: result = firstOperand + secondOperand; break;
+          case `-`: result = firstOperand - secondOperand; break;
+          case `×`: result = firstOperand * secondOperand; break;
+          case `÷`: result = firstOperand / secondOperand; break;
+          case `mod`: result = firstOperand % secondOperand; break;
+          case `^`: result = Math.pow(firstOperand, secondOperand); break;
+        }
+      } 
+      if(isNaN(secondOperand) || isNaN(firstOperand)) {
+        result = displayInput.value;  }   
+        
+      stack.push(result);
+    }
+  });
+  return stack[0];
+}
+
+
+function addEleToHistory(text, result) {
+ 
+  let div1 = document.createElement('div');
+  let pStart = document.createElement('p');
+  let pMid = document.createElement('p');
+  let pEnd = document.createElement('p');
+
+  pStart.textContent = text ;
+  pMid.textContent = `  =  `;
+  pEnd.textContent = result;
+
+  
+  div1.appendChild(pStart);
+  div1.appendChild(pMid);
+  div1.appendChild(pEnd);
+  parentDiv.appendChild(div1);
+
+}
+
+
+function isNotParenthesis(stack) {
+  return stack[stack.length - 1] !== `(`;
+}
 
 function logFun() {
   const value = parseFloat(displayInput.value);
@@ -98,117 +230,33 @@ function isNumericInput(userInput) {
 }
 
 function appendIfNumeric(userInput) {
-  displayInput.value += userInput;
+  if(userInput === `.`) {
+    if(displayInput.value.match(/\./g) === null) {
+      displayInput.value += userInput;
+    }
+    return displayInput.value;
+  } 
+ else displayInput.value += userInput;
 }
 
 function isOperator(userInput) {
   return operations.includes(userInput);
-}
-
-// -------------- stackCheck -------------------
-function stackCheck(stack, queue, ele) {
-  if (stack.length === 0) stack.push(ele);
-  else {
-    if (precedence[ele] > precedence[stack[stack.length - 1]]) {
-      stack.push(ele);
-    } else if (precedence[ele] == precedence[stack[stack.length - 1]]) {
-      if (isNotParenthesis(stack)) {
-        queue.push(stack[stack.length - 1]);
-      }
-      stack.pop();
-      stack.push(ele);
-    } else if (precedence[ele] < precedence[stack[stack.length - 1]]) {
-
-      if (isNotParenthesis(stack)) {
-        queue.push(stack[stack.length - 1]);
-      }
-      stack.pop();
-      stack.push(ele);
-    }
-  }
-  if (stack.length == 2 &&
-    precedence[ele] == precedence[stack[0]]) {
-    if (isNotParenthesis(stack)) {
-      queue.push(stack[0]);
-    }
-    stack.shift();
-  }
-}
-
-function isNotParenthesis(stack) {
-  return stack[stack.length - 1] !== `(`;
-}
-// -------------- infix -------------------
-function infix(arithmeticOperation) {
-  console.log("arith is: " + arithmeticOperation); 
-  for (let ele of arithmeticOperation) {
-    if (ele == `)`) {
-      for (let i = stack.length - 1; i >= 0; i--) {
-        if (stack[i] == `(`) {
-          stack.pop();
-          break;
-        } else queue.push(stack.pop());
-      }
-    } else if (isOperator(ele)) {
-      stackCheck(stack, queue, ele);
-    } else if (isNumericInput(ele)) {
-      queue.push(ele);
-    }
-  }
-  if (stack.length !== 0) {
-    for (let i = 0; stack.length > 0; i++) queue.push(stack.pop());
-  }
-  return queue;
-}
-
-// -------------- postfix -------------------
-function postfix(infixArr) {
-  const stack = [];
-  infixArr.forEach(ele => {
-    if (!isNaN(ele)) stack.push(Number(ele));
-    else {    
-      let secondOperand = stack.pop();
-      let firstOperand = stack.pop();
-      let operation = ele;
-      let result;
-      if(!isNaN(secondOperand) && !isNaN(firstOperand)) {
-        switch (operation) {
-          case `+`: result = firstOperand + secondOperand; break;
-          case `-`: result = firstOperand - secondOperand; break;
-          case `×`: result = firstOperand * secondOperand; break;
-          case `÷`: result = firstOperand / secondOperand; break;
-          case `mod`: result = firstOperand % secondOperand; break;
-          case `X²`: result = Math.pow(firstOperand, secondOperand); break;
-        }
-      } 
-      if(isNaN(secondOperand) || isNaN(firstOperand)) {
-        result = displayInput.value;  }   
-        
-      stack.push(result);
-    }
-  });
-  return stack[0];
-}
-
-
-function addEleToHistory(text, result) {
- 
-  let div1 = document.createElement('div');
-  let pStart = document.createElement('p');
-  let pMid = document.createElement('p');
-  let pEnd = document.createElement('p');
-
-  pStart.textContent = text;
-  pMid.textContent = `  =  `;
-  pEnd.textContent = result;
-
-  
-  div1.appendChild(pStart);
-  div1.appendChild(pMid);
-  div1.appendChild(pEnd);
-  parentDiv.appendChild(div1);
 
 }
 
 
+function isPreviousEleOperator(arithmeticOperation , ele) {
+  return isOperator(arithmeticOperation[ele - 1]); 
+}
+function isNextEleOperator(arithmeticOperation , ele) {
+  return isOperator(arithmeticOperation[ele + 1]); 
+}
+function isNextToNextEleOperator(arithmeticOperation , ele) {
+  return isOperator(arithmeticOperation[ele + 2]); 
+}
 
+function areInvalidInputs(arithmeticOperation, ele) {
+  return      isNextEleOperator(arithmeticOperation , ele) &&
+             isNextToNextEleOperator(arithmeticOperation , ele) 
+
+}
