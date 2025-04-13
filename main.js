@@ -29,7 +29,6 @@ const regExp = /((\d*\.\d+|\d+\.\d*|\d+)|\+|\-|\*|\/|\×|\÷|\(|\)|(\^)|(\%))/g;
 const checkDot = /(\.\.{2,})|(\.\d\.)|(\d\.{2,})/;
 const checkOperator = /(\×{2,})|(\×\÷)|(\÷\×)|(\÷{2,})/;
 
-
 calcBody.addEventListener("click", (e) => {
   if (e.target.tagName === `BUTTON`) {
     userInput = e.target.textContent;
@@ -341,9 +340,9 @@ function addMultiplication(input) {
   return input;
 }
 
-function isFirstIndexDivisionOrMultiplication(input) {
-  if (input[0] === `×`) return true;
-  if (input[0] === `÷`) return true;
+function isFirstIndexDivisionOrMultiplication(displayInput) {
+  if (displayInput[0] === `×`) return true;
+  if (displayInput[0] === `÷`) return true;
   return false;
 
 }
