@@ -35,7 +35,12 @@ calcBody.addEventListener("click", (e) => {
     userInput = e.target.textContent;
     // check if User Input is Number or point or ( )
     if (isNumericInput(userInput) || isOperator(userInput)) {
-      appendIfNumeric(userInput);   //to display user input at input
+      if (userInput === `)` && parenthesesValid(displayInput.value)) {
+        appendIfValid(userInput);
+      }
+      else if (userInput !== `)`) {
+        appendIfValid(userInput);   //to display user input at input
+      }
     }
     // Start Process 
     else if (userInput === `=`) {
@@ -128,7 +133,7 @@ function postfix(infixArr) {
       console.log(firstOperand + operator + secondOperand);
     }
   }
-   return stack[0];
+  return stack[0];
 }
 
 
@@ -222,7 +227,30 @@ function isNumericInput(num) {
   return !isNaN(parseFloat(num));
 }
 
-function appendIfNumeric(userInput) {
+function parenthesesValid(displayInput) {
+  let isParenthesesClose = [];
+  let isParenthesesOpen = [];
+  console.log(displayInput);
+  for (let i = displayInput.length - 1; i >= 0; i--) {
+    if (displayInput[i] === `)`) {
+      isParenthesesClose.push(`)`);
+    }
+    if (displayInput[i] === `(`) {
+      isParenthesesOpen.push(`(`);
+      if (isParenthesesClose.length > 0 && isParenthesesOpen.length > 0) {
+        isParenthesesClose.pop();
+        isParenthesesOpen.pop();
+        continue;
+      }
+      if (isParenthesesClose.length === 0 && isParenthesesOpen.length > 0) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+function appendIfValid(userInput) {
   displayInput.value += userInput;
 }
 
@@ -323,11 +351,11 @@ function isLastIndexDivisionOrMultiplication(input) {
   if (isEndWithOperator(input[input.length - 1])) return true;
   return false;
 
-} 
+}
 
 function clearAllFun(displayInput) {
   reset();
-  parentDiv.textContent ="";
+  parentDiv.textContent = "";
 }
 
 function isEndWithOperator(operator) {
