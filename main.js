@@ -320,7 +320,7 @@ function isFirstIndexDivisionOrMultiplication(input) {
 
 }
 function isLastIndexDivisionOrMultiplication(input) {
-  if (isOperator(input[input.length - 1])) return true;
+  if (isEndWithOperator(input[input.length - 1])) return true;
   return false;
 
 } 
@@ -328,4 +328,9 @@ function isLastIndexDivisionOrMultiplication(input) {
 function clearAllFun(displayInput) {
   reset();
   parentDiv.textContent ="";
+}
+
+function isEndWithOperator(operator) {
+  let op = [`+`, `-`, `×`, `÷`, `%`];
+  return op.includes(operator);
 }
