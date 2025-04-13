@@ -361,3 +361,7 @@ function isEndWithOperator(operator) {
   let op = [`+`, `-`, `×`, `÷`, `%`];
   return op.includes(operator);
 }
+
+function testFun() {
+  console.log(`HI`);
+}
