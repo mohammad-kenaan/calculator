@@ -23,6 +23,9 @@ const precedence = {
   "(": 4,
 }
 
+
+
+
 let arithmeticOperation = [];
 // const regExp = /(\d+(\.\d+)?(\.+)?|\+|\-|\*|\/|\×|\÷|\(|\)|(\^))/g;
 const regExp = /((\d*\.\d+|\d+\.\d*|\d+)|\+|\-|\*|\/|\×|\÷|\(|\)|(\^)|(\%))/g;
@@ -34,16 +37,16 @@ calcBody.addEventListener("click", (e) => {
     userInput = e.target.textContent;
     // check if User Input is Number or point or ( )
     if (isNumericInput(userInput) || isOperator(userInput)) {
-      if (userInput === `)` && parenthesesValid(displayInput.value)) {
-        appendIfValid(userInput);
+      // check if the first Index Not [*,/,%,),^]
+      if (isItFirstIndexInvalid(userInput, displayInput.value)) {
+        console.log("Invalid Input -t1");
       }
-      else if (userInput !== `)`) {
-        appendIfValid(userInput);   //to display user input at input
+      else {
+        appendIfValid(userInput);
       }
     }
     // Start Process 
     else if (userInput === `=`) {
-
       arithmeticOperation = expressionInArray(displayInput.value,
         checkOperator, checkDot, regExp);
       if (arithmeticOperation.length === 0) {
@@ -51,6 +54,9 @@ calcBody.addEventListener("click", (e) => {
       } else {
         let infixArr = infix(arithmeticOperation);
         result = postfix(infixArr);
+
+        if(isNaN(result)) result = `Invalid Operator`;
+        
         addEleToHistory(displayInput.value, result);
         displayInput.value = result;   // Put the result here
         newArithmeticOperation();
@@ -129,7 +135,7 @@ function postfix(infixArr) {
       }
 
       stack.push(result);
-      console.log(firstOperand + operator + secondOperand);
+      console.log(stack[0]  +  "  -T3");
     }
   }
   return stack[0];
@@ -143,11 +149,6 @@ function expressionInArray(displayInput, checkOperator, checkDot,
   expression = displayInput.replace(/\s+/g, '');
   // Abort the process if the input has repeated dots
 
-  if (isFirstIndexDivisionOrMultiplication(displayInput)) {
-    typeOfError = `\tError   
-    - Expressions cannot start with an operator`;
-    return [];
-  }
   if (isLastIndexDivisionOrMultiplication(displayInput)) {
     typeOfError = `\tError  
      - Expressions cannot end with an operator`;
@@ -226,10 +227,24 @@ function isNumericInput(num) {
   return !isNaN(parseFloat(num));
 }
 
+function isItFirstIndexInvalid(userInput, display) {
+  if (userInput === `)` && !parenthesesValid(displayInput.value)) {
+    return true;
+  } else if (userInput == "×" && displayInput.value.length == 0) {
+    return true;
+  } else if (userInput == "÷" && displayInput.value.length == 0) {
+    return true;
+  } else if (userInput == "%" && displayInput.value.length == 0) {
+    return true;
+  } else if (userInput == "^" && displayInput.value.length == 0) {
+    return true;
+  } else return false;
+}
+
 function parenthesesValid(displayInput) {
   let isParenthesesClose = [];
   let isParenthesesOpen = [];
-  console.log(displayInput);
+  console.log(displayInput  +  "  -T4");
   for (let i = displayInput.length - 1; i >= 0; i--) {
     if (displayInput[i] === `)`) {
       isParenthesesClose.push(`)`);
@@ -340,12 +355,6 @@ function addMultiplication(input) {
   return input;
 }
 
-function isFirstIndexDivisionOrMultiplication(displayInput) {
-  if (displayInput[0] === `×`) return true;
-  if (displayInput[0] === `÷`) return true;
-  return false;
-
-}
 function isLastIndexDivisionOrMultiplication(input) {
   if (isEndWithOperator(input[input.length - 1])) return true;
   return false;
@@ -360,8 +369,4 @@ function clearAllFun(displayInput) {
 function isEndWithOperator(operator) {
   let op = [`+`, `-`, `×`, `÷`, `%`];
   return op.includes(operator);
-}
-
-function testFun() {
-  console.log(`HI`);
 }
