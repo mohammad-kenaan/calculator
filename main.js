@@ -12,12 +12,12 @@ let userInput;
 let result;
 let typeOfError = '';
 let clearOperator = [`C`, `⌫`];
-const operations = [`+`, `-`, `×`, `÷`, `%`, `^`, `(`, `)`, 'n', '.'];
+const operations = [`+`, `-`, `*`, `÷`, `%`, `^`, `(`, `)`, 'n', '.'];
 const precedence = {
   "-": 1,
   "+": 1,
   "÷": 2,
-  "×": 2,
+  "*": 2,
   "%": 2,
   "^": 3,
   "(": 4,
@@ -27,19 +27,18 @@ const precedence = {
 
 
 let arithmeticOperation = [];
-// const regExp = /(\d+(\.\d+)?(\.+)?|\+|\-|\*|\/|\×|\÷|\(|\)|(\^))/g;
-const regExp = /((\d*\.\d+|\d+\.\d*|\d+)|\+|\-|\*|\/|\×|\÷|\(|\)|(\^)|(\%))/g;
+// const regExp = /(\d+(\.\d+)?(\.+)?|\+|\-|\*|\/|\*|\÷|\(|\)|(\^))/g;
+const regExp = /((\d*\.\d+|\d+\.\d*|\d+)|\+|\-|\*|\/|\*|\÷|\(|\)|(\^)|(\%))/g;
 const checkDot = /(\.\.{2,})|(\.\d\.)|(\d\.{2,})/;
-const checkOperator = /(\×{2,})|(\×\÷)|(\÷\×)|(\÷{2,})/;
+const checkOperator = /(\*{2,})|(\*\÷)|(\÷\*)|(\÷{2,})/;
 
 calcBody.addEventListener("click", (e) => {
   if (e.target.tagName === `BUTTON`) {
-    userInput = e.target.textContent;
+    userInput = e.target.title;
     // check if User Input is Number or point or ( )
     if (isNumericInput(userInput) || isOperator(userInput)) {
       // check if the first Index Not [*,/,%,),^]
       if (isItFirstIndexInvalid(userInput, displayInput.value)) {
-        console.log("Invalid Input -t1");
       }
       else {
         appendIfValid(userInput);
@@ -128,14 +127,13 @@ function postfix(infixArr) {
       switch (operator) {
         case `+`: result = firstOperand + secondOperand; break;
         case `-`: result = firstOperand - secondOperand; break;
-        case `×`: result = firstOperand * secondOperand; break;
+        case `*`: result = firstOperand * secondOperand; break;
         case `÷`: result = firstOperand / secondOperand; break;
         case `%`: result = firstOperand % secondOperand; break;
         case `^`: result = Math.pow(firstOperand, secondOperand); break;
       }
 
       stack.push(result);
-      console.log(stack[0]  +  "  -T3");
     }
   }
   return stack[0];
@@ -147,34 +145,33 @@ function expressionInArray(displayInput, checkOperator, checkDot,
   regExp) {
   // Remove space
   expression = displayInput.replace(/\s+/g, '');
-  // Abort the process if the input has repeated dots
-
+  // Abort the process if the input Ends with Operator
   if (isLastIndexDivisionOrMultiplication(displayInput)) {
-    typeOfError = `\tError  
-     - Expressions cannot end with an operator`;
-    return [];
+        return [];
   }
-
+  // Abort the process if the input has repeated dots
   if (checkDot.test(expression)) {
     typeOfError = `\tError  
     - Multiple decimal points
      detected in a single number`;
     return [];
   }
+// Abort the process if the input has * followed by ÷ or vice versa
   if (checkOperator.test(expression)) {
     typeOfError = `\tError  
      - Consecutive multiplication-division
       operators detected`;
     return [];
   }
+ // Abort the process if the input has many operators behind each other
   if (hasMultiOperators(expression)) {
     typeOfError = ` \tError 
     - Invalid operator sequence detected`;
     return [];
   }
 
+ // to separate each ele Alone, then put it in array of index
   expression = expression.match(regExp) || [];
-  // to separate number operators and parentheses then put it in array of index
   return expression;
 }
 
@@ -230,7 +227,7 @@ function isNumericInput(num) {
 function isItFirstIndexInvalid(userInput, display) {
   if (userInput === `)` && !parenthesesValid(displayInput.value)) {
     return true;
-  } else if (userInput == "×" && displayInput.value.length == 0) {
+  } else if (userInput == "*" && displayInput.value.length == 0) {
     return true;
   } else if (userInput == "÷" && displayInput.value.length == 0) {
     return true;
@@ -244,7 +241,6 @@ function isItFirstIndexInvalid(userInput, display) {
 function parenthesesValid(displayInput) {
   let isParenthesesClose = [];
   let isParenthesesOpen = [];
-  console.log(displayInput  +  "  -T4");
   for (let i = displayInput.length - 1; i >= 0; i--) {
     if (displayInput[i] === `)`) {
       isParenthesesClose.push(`)`);
@@ -280,7 +276,7 @@ function isNextEleOperator(arr, ele) {
 }
 
 function hasMultiOperators(input) {
-  const operatorsList = [`+`, `-`, `×`, `÷`];
+  const operatorsList = [`+`, `-`, `*`, `÷`];
   for (let i = 0; i < input.length; i++) {
     if (operatorsList.includes(input[i])) {
       if (operatorsList.includes(input[i + 1])) {
@@ -339,14 +335,14 @@ function addMultiplication(input) {
     for (let i = 0; i < input.length; i++) {
       if (input[i] === `(`) {
         if (i > 0 && !isPreviousEleOperator(input, i)) {
-          input.splice(i, 0, `×`);
+          input.splice(i, 0, `*`);
           i++;
           continue;
         }
       }
       else if (input[i] === `)`)
         if (i !== input.length - 1 && !isNextEleOperator(input, i)) {
-          input.splice(i + 1, 0, `×`);
+          input.splice(i + 1, 0, `*`);
           i++;
           continue;
         }
@@ -367,6 +363,6 @@ function clearAllFun(displayInput) {
 }
 
 function isEndWithOperator(operator) {
-  let op = [`+`, `-`, `×`, `÷`, `%`];
+  let op = [`+`, `-`, `*`, `÷`, `%`];
   return op.includes(operator);
 }
